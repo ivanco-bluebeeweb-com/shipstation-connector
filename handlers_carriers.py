@@ -35,7 +35,7 @@ def _carrier_from(d: dict) -> Carrier:
     )
 
 
-@chat.function(name="list_carriers", data_model=CarrierList, description="List carrier accounts connected in ShipStation (e.g. UPS, FedEx, USPS) with balance and account info.")
+@chat.function(name="list_carriers", event="shipstation-connector.list_carriers", action_type="read", data_model=CarrierList, description="List carrier accounts connected in ShipStation (e.g. UPS, FedEx, USPS) with balance and account info.")
 async def list_carriers(ctx, params: NoParams) -> ActionResult:
     """List carrier accounts connected in ShipStation (e.g. UPS, FedEx, USPS) with balance and account info."""
     key = await _get_key(ctx)
@@ -46,7 +46,7 @@ async def list_carriers(ctx, params: NoParams) -> ActionResult:
     return ActionResult.success(CarrierList(items=items))
 
 
-@chat.function(name="get_carrier", data_model=Carrier, description="Read one carrier account in full by id.")
+@chat.function(name="get_carrier", event="shipstation-connector.get_carrier", action_type="read", data_model=Carrier, description="Read one carrier account in full by id.")
 async def get_carrier(ctx, params: GetCarrierParams) -> ActionResult:
     """Read one carrier account in full by id."""
     key = await _get_key(ctx)
@@ -56,7 +56,7 @@ async def get_carrier(ctx, params: GetCarrierParams) -> ActionResult:
     return ActionResult.success(_carrier_from(data))
 
 
-@chat.function(name="get_carrier_options", data_model=CarrierOptionList, description="Read the configurable shipping options a specific carrier supports (e.g. saturday delivery, signature confirmation).")
+@chat.function(name="get_carrier_options", event="shipstation-connector.get_carrier_options", action_type="read", data_model=CarrierOptionList, description="Read the configurable shipping options a specific carrier supports (e.g. saturday delivery, signature confirmation).")
 async def get_carrier_options(ctx, params: GetCarrierOptionsParams) -> ActionResult:
     """Read the configurable shipping options a specific carrier supports (e.g. saturday delivery, signature confirmation)."""
     key = await _get_key(ctx)
@@ -79,7 +79,7 @@ def _package_type_from(d: dict) -> PackageType:
     )
 
 
-@chat.function(name="list_carrier_package_types", data_model=PackageTypeList, description="List package types a carrier supports (built-in and custom), e.g. flat rate envelope, box, thick envelope.")
+@chat.function(name="list_carrier_package_types", event="shipstation-connector.list_carrier_package_types", action_type="read", data_model=PackageTypeList, description="List package types a carrier supports (built-in and custom), e.g. flat rate envelope, box, thick envelope.")
 async def list_carrier_package_types(ctx, params: ListCarrierPackageTypesParams) -> ActionResult:
     """List package types a carrier supports (built-in and custom), e.g. flat rate envelope, box, thick envelope."""
     key = await _get_key(ctx)
@@ -90,7 +90,7 @@ async def list_carrier_package_types(ctx, params: ListCarrierPackageTypesParams)
     return ActionResult.success(PackageTypeList(items=items))
 
 
-@chat.function(name="create_package_type", data_model=PackageType, description="Create a custom package type with fixed dimensions for a carrier.")
+@chat.function(name="create_package_type", event="shipstation-connector.create_package_type", effects=['create:package_type'], action_type="write", data_model=PackageType, description="Create a custom package type with fixed dimensions for a carrier.")
 async def create_package_type(ctx, params: CreatePackageTypeParams) -> ActionResult:
     """Create a custom package type with fixed dimensions for a carrier."""
     key = await _get_key(ctx)
@@ -105,7 +105,7 @@ async def create_package_type(ctx, params: CreatePackageTypeParams) -> ActionRes
     return ActionResult.success(_package_type_from(data), message=f"Package type '{params.name}' created.")
 
 
-@chat.function(name="update_package_type", data_model=PackageType, description="Update an existing custom package type's name or dimensions.")
+@chat.function(name="update_package_type", event="shipstation-connector.update_package_type", effects=['update:package_type'], action_type="write", data_model=PackageType, description="Update an existing custom package type's name or dimensions.")
 async def update_package_type(ctx, params: UpdatePackageTypeParams) -> ActionResult:
     """Update an existing custom package type's name or dimensions."""
     key = await _get_key(ctx)
@@ -120,7 +120,7 @@ async def update_package_type(ctx, params: UpdatePackageTypeParams) -> ActionRes
     return ActionResult.success(_package_type_from(data), message="Package type updated.")
 
 
-@chat.function(name="delete_package_type", data_model=DeleteResult, description="Permanently delete a custom package type.")
+@chat.function(name="delete_package_type", event="shipstation-connector.delete_package_type", effects=['delete:package_type'], action_type="destructive", data_model=DeleteResult, description="Permanently delete a custom package type.")
 async def delete_package_type(ctx, params: DeletePackageTypeParams) -> ActionResult:
     """Permanently delete a custom package type."""
     key = await _get_key(ctx)
@@ -144,7 +144,7 @@ def _warehouse_from(d: dict) -> Warehouse:
     )
 
 
-@chat.function(name="list_warehouses", data_model=WarehouseList, description="List warehouses/ship-from locations configured in ShipStation.")
+@chat.function(name="list_warehouses", event="shipstation-connector.list_warehouses", action_type="read", data_model=WarehouseList, description="List warehouses/ship-from locations configured in ShipStation.")
 async def list_warehouses(ctx, params: NoParams) -> ActionResult:
     """List warehouses/ship-from locations configured in ShipStation."""
     key = await _get_key(ctx)
@@ -155,7 +155,7 @@ async def list_warehouses(ctx, params: NoParams) -> ActionResult:
     return ActionResult.success(WarehouseList(items=items))
 
 
-@chat.function(name="get_warehouse", data_model=Warehouse, description="Read one warehouse in full by id.")
+@chat.function(name="get_warehouse", event="shipstation-connector.get_warehouse", action_type="read", data_model=Warehouse, description="Read one warehouse in full by id.")
 async def get_warehouse(ctx, params: GetWarehouseParams) -> ActionResult:
     """Read one warehouse in full by id."""
     key = await _get_key(ctx)
@@ -178,7 +178,7 @@ def _address_body(a) -> dict:
     }
 
 
-@chat.function(name="create_warehouse", data_model=Warehouse, description="Create a new warehouse/ship-from location.")
+@chat.function(name="create_warehouse", event="shipstation-connector.create_warehouse", effects=['create:warehouse'], action_type="write", data_model=Warehouse, description="Create a new warehouse/ship-from location.")
 async def create_warehouse(ctx, params: CreateWarehouseParams) -> ActionResult:
     """Create a new warehouse/ship-from location."""
     key = await _get_key(ctx)
@@ -189,7 +189,7 @@ async def create_warehouse(ctx, params: CreateWarehouseParams) -> ActionResult:
     return ActionResult.success(_warehouse_from(data), message=f"Warehouse '{params.name}' created.")
 
 
-@chat.function(name="update_warehouse", data_model=Warehouse, description="Update an existing warehouse's name or default flag.")
+@chat.function(name="update_warehouse", event="shipstation-connector.update_warehouse", effects=['update:warehouse'], action_type="write", data_model=Warehouse, description="Update an existing warehouse's name or default flag.")
 async def update_warehouse(ctx, params: UpdateWarehouseParams) -> ActionResult:
     """Update an existing warehouse's name or default flag."""
     key = await _get_key(ctx)
@@ -203,7 +203,7 @@ async def update_warehouse(ctx, params: UpdateWarehouseParams) -> ActionResult:
     return ActionResult.success(_warehouse_from(data), message="Warehouse updated.")
 
 
-@chat.function(name="delete_warehouse", data_model=DeleteResult, description="Permanently delete a warehouse.")
+@chat.function(name="delete_warehouse", event="shipstation-connector.delete_warehouse", effects=['delete:warehouse'], action_type="destructive", data_model=DeleteResult, description="Permanently delete a warehouse.")
 async def delete_warehouse(ctx, params: DeleteWarehouseParams) -> ActionResult:
     """Permanently delete a warehouse."""
     key = await _get_key(ctx)
@@ -213,7 +213,7 @@ async def delete_warehouse(ctx, params: DeleteWarehouseParams) -> ActionResult:
     return ActionResult.success(DeleteResult(deleted=True, id=params.warehouse_id), message="Warehouse deleted.")
 
 
-@chat.function(name="validate_address", data_model=AddressValidationResult, description="Validate a shipping address against carrier address-verification data before creating a label with it.")
+@chat.function(name="validate_address", event="shipstation-connector.validate_address", action_type="read", data_model=AddressValidationResult, description="Validate a shipping address against carrier address-verification data before creating a label with it.")
 async def validate_address(ctx, params: ValidateAddressParams) -> ActionResult:
     """Validate a shipping address against carrier address-verification data before creating a label with it."""
     key = await _get_key(ctx)
@@ -238,7 +238,7 @@ async def validate_address(ctx, params: ValidateAddressParams) -> ActionResult:
     ))
 
 
-@chat.function(name="get_account_summary", data_model=AccountSummary, description="Value-add report: one-glance ShipStation account health -- carrier/warehouse counts, open batches, recent label volume.")
+@chat.function(name="get_account_summary", event="shipstation-connector.get_account_summary", action_type="read", data_model=AccountSummary, description="Value-add report: one-glance ShipStation account health -- carrier/warehouse counts, open batches, recent label volume.")
 async def get_account_summary(ctx, params: GetAccountSummaryParams) -> ActionResult:
     """Value-add report: one-glance ShipStation account health -- carrier/warehouse counts, open batches, recent label volume."""
     key = await _get_key(ctx)

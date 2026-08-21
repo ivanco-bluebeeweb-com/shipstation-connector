@@ -38,7 +38,7 @@ def _label_from(d: dict) -> Label:
 
 
 @chat.function(
-    name="create_label_from_shipment", data_model=Label,
+    name="create_label_from_shipment", event="shipstation-connector.create_label_from_shipment", effects=['create:label', 'charge:postage'], action_type="destructive", data_model=Label,
     description=(
         "PURCHASE a shipping label for an existing shipment -- SPENDS REAL "
         "CARRIER POSTAGE FUNDS from your ShipStation account balance. "
@@ -65,7 +65,7 @@ async def create_label_from_shipment(ctx, params: CreateLabelFromShipmentParams)
 
 
 @chat.function(
-    name="create_label_from_rate", data_model=Label,
+    name="create_label_from_rate", event="shipstation-connector.create_label_from_rate", effects=['create:label', 'charge:postage'], action_type="destructive", data_model=Label,
     description=(
         "PURCHASE a shipping label from a previously fetched rate (calculate_rates) -- "
         "SPENDS REAL CARRIER POSTAGE FUNDS. ShipStation V2 has no sandbox/test mode."
@@ -90,7 +90,7 @@ async def create_label_from_rate(ctx, params: CreateLabelFromRateParams) -> Acti
 
 
 @chat.function(
-    name="create_return_label", data_model=Label,
+    name="create_return_label", event="shipstation-connector.create_return_label", effects=['create:label', 'charge:postage'], action_type="destructive", data_model=Label,
     description=(
         "PURCHASE a return shipping label linked to a previous outbound label -- "
         "SPENDS REAL CARRIER POSTAGE FUNDS. ShipStation V2 has no sandbox/test mode."
@@ -112,7 +112,7 @@ async def create_return_label(ctx, params: CreateReturnLabelParams) -> ActionRes
     return ActionResult.success(_label_from(data))
 
 
-@chat.function(name="list_labels", data_model=LabelList, description="List purchased shipping labels, optionally filtered by shipment.")
+@chat.function(name="list_labels", event="shipstation-connector.list_labels", action_type="read", data_model=LabelList, description="List purchased shipping labels, optionally filtered by shipment.")
 async def list_labels(ctx, params: ListLabelsParams) -> ActionResult:
     """List purchased shipping labels, optionally filtered by shipment."""
     key = await _get_key(ctx)
@@ -126,7 +126,7 @@ async def list_labels(ctx, params: ListLabelsParams) -> ActionResult:
     return ActionResult.success(LabelList(items=items))
 
 
-@chat.function(name="get_label", data_model=Label, description="Read one purchased label in full, including its download URL.")
+@chat.function(name="get_label", event="shipstation-connector.get_label", action_type="read", data_model=Label, description="Read one purchased label in full, including its download URL.")
 async def get_label(ctx, params: GetLabelParams) -> ActionResult:
     """Read one purchased label in full, including its download URL."""
     key = await _get_key(ctx)
@@ -137,7 +137,7 @@ async def get_label(ctx, params: GetLabelParams) -> ActionResult:
 
 
 @chat.function(
-    name="void_label", data_model=DeleteResult,
+    name="void_label", event="shipstation-connector.void_label", effects=['delete:label', 'refund:postage'], action_type="destructive", data_model=DeleteResult,
     description=(
         "Void a purchased label and request a refund of its postage cost from the "
         "carrier. Must be done promptly -- most carriers only refund labels voided "

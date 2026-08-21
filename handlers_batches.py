@@ -52,7 +52,7 @@ def _pickup_from(d: dict) -> Pickup:
 
 # ── Batches ──────────────────────────────────────────────────────────────
 
-@chat.function(name="create_batch", data_model=Batch, description="Create a new batch (a group of shipments to process/label together) in ShipStation, optionally pre-populated with shipment ids.")
+@chat.function(name="create_batch", event="shipstation-connector.create_batch", effects=['create:batch'], action_type="write", data_model=Batch, description="Create a new batch (a group of shipments to process/label together) in ShipStation, optionally pre-populated with shipment ids.")
 async def create_batch(ctx, params: CreateBatchParams) -> ActionResult:
     """Create a new batch (a group of shipments to process/label together) in ShipStation, optionally pre-populated with shipment ids."""
     key = await _get_key(ctx)
@@ -67,7 +67,7 @@ async def create_batch(ctx, params: CreateBatchParams) -> ActionResult:
     return ActionResult.success(_batch_from(data))
 
 
-@chat.function(name="list_batches", data_model=BatchList, description="List batches, optionally filtered by status ('open', 'completed', 'processing').")
+@chat.function(name="list_batches", event="shipstation-connector.list_batches", action_type="read", data_model=BatchList, description="List batches, optionally filtered by status ('open', 'completed', 'processing').")
 async def list_batches(ctx, params: ListBatchesParams) -> ActionResult:
     """List batches, optionally filtered by status ('open', 'completed', 'processing')."""
     key = await _get_key(ctx)
@@ -81,7 +81,7 @@ async def list_batches(ctx, params: ListBatchesParams) -> ActionResult:
     return ActionResult.success(BatchList(items=items))
 
 
-@chat.function(name="get_batch", data_model=Batch, description="Read one batch in full -- status, label count, and any errors.")
+@chat.function(name="get_batch", event="shipstation-connector.get_batch", action_type="read", data_model=Batch, description="Read one batch in full -- status, label count, and any errors.")
 async def get_batch(ctx, params: GetBatchParams) -> ActionResult:
     """Read one batch in full -- status, label count, and any errors."""
     key = await _get_key(ctx)
@@ -91,7 +91,7 @@ async def get_batch(ctx, params: GetBatchParams) -> ActionResult:
     return ActionResult.success(_batch_from(data))
 
 
-@chat.function(name="add_to_batch", data_model=Batch, description="Add shipments to an existing open batch.")
+@chat.function(name="add_to_batch", event="shipstation-connector.add_to_batch", effects=['update:batch'], action_type="write", data_model=Batch, description="Add shipments to an existing open batch.")
 async def add_to_batch(ctx, params: AddToBatchParams) -> ActionResult:
     """Add shipments to an existing open batch."""
     key = await _get_key(ctx)
@@ -101,7 +101,7 @@ async def add_to_batch(ctx, params: AddToBatchParams) -> ActionResult:
     return ActionResult.success(_batch_from(data))
 
 
-@chat.function(name="remove_from_batch", data_model=Batch, description="Remove shipments from an open batch.")
+@chat.function(name="remove_from_batch", event="shipstation-connector.remove_from_batch", effects=['update:batch'], action_type="write", data_model=Batch, description="Remove shipments from an open batch.")
 async def remove_from_batch(ctx, params: RemoveFromBatchParams) -> ActionResult:
     """Remove shipments from an open batch."""
     key = await _get_key(ctx)
@@ -112,7 +112,7 @@ async def remove_from_batch(ctx, params: RemoveFromBatchParams) -> ActionResult:
 
 
 @chat.function(
-    name="process_batch", data_model=Batch,
+    name="process_batch", event="shipstation-connector.process_batch", effects=['create:label', 'charge:postage'], action_type="destructive", data_model=Batch,
     description=(
         "PROCESS a batch -- PURCHASES REAL SHIPPING LABELS for every shipment in "
         "it, SPENDING REAL CARRIER POSTAGE FUNDS. ShipStation V2 has no sandbox: "
@@ -129,7 +129,7 @@ async def process_batch(ctx, params: ProcessBatchParams) -> ActionResult:
     return ActionResult.success(_batch_from(data))
 
 
-@chat.function(name="delete_batch", data_model=DeleteResult, description="Permanently delete a batch. Does not void any labels already purchased through it.")
+@chat.function(name="delete_batch", event="shipstation-connector.delete_batch", effects=['delete:batch'], action_type="destructive", data_model=DeleteResult, description="Permanently delete a batch. Does not void any labels already purchased through it.")
 async def delete_batch(ctx, params: DeleteBatchParams) -> ActionResult:
     """Permanently delete a batch. Does not void any labels already purchased through it."""
     key = await _get_key(ctx)
@@ -142,7 +142,7 @@ async def delete_batch(ctx, params: DeleteBatchParams) -> ActionResult:
 # ── Manifests ────────────────────────────────────────────────────────────
 
 @chat.function(
-    name="create_manifest", data_model=Manifest,
+    name="create_manifest", event="shipstation-connector.create_manifest", effects=['create:manifest'], action_type="write", data_model=Manifest,
     description=(
         "Create a customs/carrier manifest -- the end-of-day document some "
         "carriers (e.g. USPS SCAN form) require to accept a batch of shipments "
@@ -166,7 +166,7 @@ async def create_manifest(ctx, params: CreateManifestParams) -> ActionResult:
     return ActionResult.success(_manifest_from(data))
 
 
-@chat.function(name="list_manifests", data_model=ManifestList, description="List customs/carrier manifests, optionally filtered by warehouse.")
+@chat.function(name="list_manifests", event="shipstation-connector.list_manifests", action_type="read", data_model=ManifestList, description="List customs/carrier manifests, optionally filtered by warehouse.")
 async def list_manifests(ctx, params: ListManifestsParams) -> ActionResult:
     """List customs/carrier manifests, optionally filtered by warehouse."""
     key = await _get_key(ctx)
@@ -180,7 +180,7 @@ async def list_manifests(ctx, params: ListManifestsParams) -> ActionResult:
     return ActionResult.success(ManifestList(items=items))
 
 
-@chat.function(name="get_manifest", data_model=Manifest, description="Read one manifest in full, including its download URL.")
+@chat.function(name="get_manifest", event="shipstation-connector.get_manifest", action_type="read", data_model=Manifest, description="Read one manifest in full, including its download URL.")
 async def get_manifest(ctx, params: GetManifestParams) -> ActionResult:
     """Read one manifest in full, including its download URL."""
     key = await _get_key(ctx)
@@ -193,7 +193,7 @@ async def get_manifest(ctx, params: GetManifestParams) -> ActionResult:
 # ── Pickups ──────────────────────────────────────────────────────────────
 
 @chat.function(
-    name="schedule_pickup", data_model=Pickup,
+    name="schedule_pickup", event="shipstation-connector.schedule_pickup", effects=['create:pickup'], action_type="write", data_model=Pickup,
     description=(
         "Schedule a carrier pickup at a warehouse -- asks the carrier to send a "
         "driver to collect packages. Some carriers may charge a pickup fee; "
@@ -218,7 +218,7 @@ async def schedule_pickup(ctx, params: SchedulePickupParams) -> ActionResult:
     return ActionResult.success(_pickup_from(data))
 
 
-@chat.function(name="list_pickups", data_model=PickupList, description="List scheduled carrier pickups.")
+@chat.function(name="list_pickups", event="shipstation-connector.list_pickups", action_type="read", data_model=PickupList, description="List scheduled carrier pickups.")
 async def list_pickups(ctx, params: ListPickupsParams) -> ActionResult:
     """List scheduled carrier pickups."""
     key = await _get_key(ctx)
@@ -230,7 +230,7 @@ async def list_pickups(ctx, params: ListPickupsParams) -> ActionResult:
     return ActionResult.success(PickupList(items=items))
 
 
-@chat.function(name="get_pickup", data_model=Pickup, description="Read one scheduled pickup in full.")
+@chat.function(name="get_pickup", event="shipstation-connector.get_pickup", action_type="read", data_model=Pickup, description="Read one scheduled pickup in full.")
 async def get_pickup(ctx, params: GetPickupParams) -> ActionResult:
     """Read one scheduled pickup in full."""
     key = await _get_key(ctx)
@@ -240,7 +240,7 @@ async def get_pickup(ctx, params: GetPickupParams) -> ActionResult:
     return ActionResult.success(_pickup_from(data))
 
 
-@chat.function(name="cancel_pickup", data_model=DeleteResult, description="Cancel a scheduled carrier pickup.")
+@chat.function(name="cancel_pickup", event="shipstation-connector.cancel_pickup", effects=['delete:pickup'], action_type="destructive", data_model=DeleteResult, description="Cancel a scheduled carrier pickup.")
 async def cancel_pickup(ctx, params: CancelPickupParams) -> ActionResult:
     """Cancel a scheduled carrier pickup."""
     key = await _get_key(ctx)

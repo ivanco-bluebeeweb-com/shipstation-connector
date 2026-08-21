@@ -28,7 +28,7 @@ def _product_from(d: dict) -> Product:
     )
 
 
-@chat.function(name="list_products", data_model=ProductList, description="List products in ShipStation's catalog, optionally filtered by SKU.")
+@chat.function(name="list_products", event="shipstation-connector.list_products", action_type="read", data_model=ProductList, description="List products in ShipStation's catalog, optionally filtered by SKU.")
 async def list_products(ctx, params: ListProductsParams) -> ActionResult:
     """List products in ShipStation's catalog, optionally filtered by SKU."""
     key = await _get_key(ctx)
@@ -42,7 +42,7 @@ async def list_products(ctx, params: ListProductsParams) -> ActionResult:
     return ActionResult.success(ProductList(items=items))
 
 
-@chat.function(name="get_product", data_model=Product, description="Read one catalog product in full.")
+@chat.function(name="get_product", event="shipstation-connector.get_product", action_type="read", data_model=Product, description="Read one catalog product in full.")
 async def get_product(ctx, params: GetProductParams) -> ActionResult:
     """Read one catalog product in full."""
     key = await _get_key(ctx)
@@ -52,7 +52,7 @@ async def get_product(ctx, params: GetProductParams) -> ActionResult:
     return ActionResult.success(_product_from(data))
 
 
-@chat.function(name="create_product", data_model=Product, description="Create a new product in ShipStation's catalog with a default weight.")
+@chat.function(name="create_product", event="shipstation-connector.create_product", effects=['create:product'], action_type="write", data_model=Product, description="Create a new product in ShipStation's catalog with a default weight.")
 async def create_product(ctx, params: CreateProductParams) -> ActionResult:
     """Create a new product in ShipStation's catalog with a default weight."""
     key = await _get_key(ctx)
@@ -65,7 +65,7 @@ async def create_product(ctx, params: CreateProductParams) -> ActionResult:
     return ActionResult.success(_product_from(data))
 
 
-@chat.function(name="update_product", data_model=Product, description="Update selected fields of an existing catalog product. Only given fields change.")
+@chat.function(name="update_product", event="shipstation-connector.update_product", effects=['update:product'], action_type="write", data_model=Product, description="Update selected fields of an existing catalog product. Only given fields change.")
 async def update_product(ctx, params: UpdateProductParams) -> ActionResult:
     """Update selected fields of an existing catalog product. Only given fields change."""
     key = await _get_key(ctx)
@@ -81,7 +81,7 @@ async def update_product(ctx, params: UpdateProductParams) -> ActionResult:
     return ActionResult.success(_product_from(data))
 
 
-@chat.function(name="list_shipstation_users", data_model=ShipStationUserList, description="List the users registered on this ShipStation account.")
+@chat.function(name="list_shipstation_users", event="shipstation-connector.list_shipstation_users", action_type="read", data_model=ShipStationUserList, description="List the users registered on this ShipStation account.")
 async def list_shipstation_users(ctx, params: NoParams) -> ActionResult:
     """List the users registered on this ShipStation account."""
     key = await _get_key(ctx)
@@ -101,7 +101,7 @@ async def list_shipstation_users(ctx, params: NoParams) -> ActionResult:
 
 
 @chat.function(
-    name="get_account_summary", data_model=AccountSummary,
+    name="get_account_summary", event="shipstation-connector.get_account_summary", action_type="read", data_model=AccountSummary,
     description=(
         "Value-add report: one-glance ShipStation account health snapshot -- "
         "carrier count and combined balance, open shipments, pending "

@@ -29,7 +29,7 @@ async def _get_key(ctx) -> str:
 
 
 @chat.function(
-    name="connect_shipstation", data_model=ProviderConnection,
+    name="connect_shipstation", event="shipstation-connector.connect_shipstation", effects=['create:connection'], action_type="write", data_model=ProviderConnection,
     description=(
         "Connect ShipStation by saving your own API V2 key, after checking "
         "it actually works. Get it from ShipStation: Account Settings > "
@@ -58,7 +58,7 @@ async def connect_shipstation(ctx, params: ConnectShipStationParams) -> ActionRe
 
 
 @chat.function(
-    name="disconnect_shipstation", data_model=DeleteResult,
+    name="disconnect_shipstation", event="shipstation-connector.disconnect_shipstation", effects=['delete:connection'], action_type="destructive", data_model=DeleteResult,
     description="Disconnect ShipStation: deletes the saved API key. Nothing in your ShipStation account is changed.",
 )
 async def disconnect_shipstation(ctx, params: DisconnectShipStationParams) -> ActionResult:
@@ -72,7 +72,7 @@ async def disconnect_shipstation(ctx, params: DisconnectShipStationParams) -> Ac
 
 
 @chat.function(
-    name="list_connections", data_model=ProviderConnectionList,
+    name="list_connections", event="shipstation-connector.list_connections", action_type="read", data_model=ProviderConnectionList,
     description="List the connected ShipStation account(s) and whether the saved key still works.",
 )
 async def list_connections(ctx, params: NoParams) -> ActionResult:
